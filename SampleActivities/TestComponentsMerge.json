@@ -1,0 +1,54 @@
+﻿{
+    "$schema": "http://datafactories.schema.management.azure.com/schemas/2015-09-01/Microsoft.DataFactory.Pipeline.json",
+    "name": "MergePipeline",
+    "properties": {
+        "description": "Test each custom SSIS-style component - Merge",
+        "activities": [
+            {
+                "name": "MergeTransformation",
+                "type": "DotNetActivity",
+                "inputs": [
+                    {
+                        "name": "<<AzureSqlOrBlobLocationIn0>>"
+                    },
+                    {
+                        "name": "<<AzureSqlOrBlobLocationIn1>>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "name": "<<AzureSqlOrBlobLocationOut>>"
+                    }
+                ],
+                "linkedServiceName": "<<AzureBatchLinkedService>>",
+                "typeProperties": {
+                    "assemblyName": "Phidiax.Azure.ComponentExamples.dll",
+                    "entryPoint": "Phidiax.Azure.ComponentExamples.Split.MergeTransformation",
+                    "packageLinkedService": "<<CustomLibraryStorageService>>",
+                    "packageFile": "<<folder>>/Phidiax.Azure.ComponentExamples.zip",
+                    "extendedProperties": {
+                        "SliceStart": "$$Text.Format('{0:yyyyMMddHH-mm}', Time.AddMinutes(SliceStart, 0))",
+                        //extended properties: MergeC# (# corresponds to In 0 Column number), C# (# corresponds to In 1 column number) as value
+                        //Multiples should be added to merge on more than one column if needed
+                        "MergeC0": "C1",
+                        //List output column names as property name, T#C# (Table number - 0 or 1, column #) to place in this output column as value
+                        "orderID": "T1C0",
+                        "productDescription": "T0C1"
+                    }
+                },
+                "policy": {
+                    "concurrency": 1,
+                    "executionPriorityOrder": "OldestFirst",
+                    "retry": 3,
+                    "timeout": "01:00:00"
+                },
+                "scheduler": {
+                    "frequency": "Day",
+                    "interval": 1
+                }
+            }
+        ],
+        "start": "2017-02-14T00:00:00Z",
+        "end": "2017-12-31T05:00:00Z"
+    }
+    }

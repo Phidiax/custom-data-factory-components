@@ -1,0 +1,51 @@
+﻿{
+    "$schema": "http://datafactories.schema.management.azure.com/schemas/2015-09-01/Microsoft.DataFactory.Pipeline.json",
+    "name": "ConditionalSplitPipeline",
+    "properties": {
+        "description": "Test each custom SSIS-style component - Conditional Split",
+        "activities": [
+            {
+                "name": "ConditionalSplitTransformation",
+                "type": "DotNetActivity",
+                "inputs": [
+                    {
+                        "name": "<<AzureSqlOrBlobTableLocation>>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "name": "<<AzureSqlOrBlobLocationCondition0>>"
+                    },
+                    {
+                        "name": "<<AzureSqlOrBlobLocationCondition1>>"
+                    }
+                ],
+                "linkedServiceName": "<<AzureBatchLinkedService>>",
+                "typeProperties": {
+                    "assemblyName": "Phidiax.Azure.ComponentExamples.dll",
+                    "entryPoint": "Phidiax.Azure.ComponentExamples.Split.ConditionalSplitTransformation",
+                    "packageLinkedService": "<<CustomLibraryStorageService>>",
+                    "packageFile": "<<folder>>/Phidiax.Azure.ComponentExamples.zip",
+                    "extendedProperties": {
+                        "SliceStart": "$$Text.Format('{0:yyyyMMddHH-mm}', Time.AddMinutes(SliceStart, 0))",
+                        //extended properties: DatasetCondition# as property name (# corresponds to output number), Dataview filter syntax as value
+                        "DatasetCondition0": "FactoryTableId <= 3",
+                        "DatasetCondition1": "FactoryTableId > 3"
+                    }
+                },
+                "policy": {
+                    "concurrency": 1,
+                    "executionPriorityOrder": "OldestFirst",
+                    "retry": 3,
+                    "timeout": "01:00:00"
+                },
+                "scheduler": {
+                    "frequency": "Day",
+                    "interval": 1
+                }
+            }
+        ],
+             "start": "2017-02-14T00:00:00Z",
+     "end": "2017-12-31T05:00:00Z"
+    }
+    }

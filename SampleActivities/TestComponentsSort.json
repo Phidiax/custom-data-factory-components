@@ -1,0 +1,51 @@
+﻿{
+    "$schema": "http://datafactories.schema.management.azure.com/schemas/2015-09-01/Microsoft.DataFactory.Pipeline.json",
+    "name": "SortPipeline",
+    "properties": {
+        "description": "Test each custom SSIS-style component - Sort",
+        "activities": [
+            {
+                "name": "SortTransformation",
+                "type": "DotNetActivity",
+                "inputs": [
+                    {
+                        "name": "<<AzureSqlOrBlobTableLocation>>"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "name": "<<AzureSqlOrBlobLocationSort0>>"
+                    },
+                    { 
+                        "name": "<<AzureSqlOrBlobLocationSort1>>"
+                    }
+                ],
+                "linkedServiceName": "<<AzureBatchLinkedService>>",
+                "typeProperties": {
+                    "assemblyName": "Phidiax.Azure.ComponentExamples.dll",
+                    "entryPoint": "Phidiax.Azure.ComponentExamples.Rowset.SortTransformation",
+                    "packageLinkedService": "<<CustomLibraryStorageService>>",
+                    "packageFile": "<<folder>>/Phidiax.Azure.ComponentExamples.zip",
+                    "extendedProperties": {
+                        "SliceStart": "$$Text.Format('{0:yyyyMMddHH-mm}', Time.AddMinutes(SliceStart, 0))",
+                        //extended properties: DatasetSort# as property name (# corresponds to output number), Dataview sort syntax as value
+                        "DatasetSort0": "FactoryTableId DESC",
+                        "DatasetSort1": "FactoryTableDescription"
+                    }
+                },
+                "policy": {
+                    "concurrency": 1,
+                    "executionPriorityOrder": "OldestFirst",
+                    "retry": 3,
+                    "timeout": "01:00:00"
+                },
+                "scheduler": {
+                    "frequency": "Day",
+                    "interval": 1
+                }
+            }
+        ],
+             "start": "2017-02-14T00:00:00Z",
+     "end": "2017-12-31T05:00:00Z"
+    }
+    }
